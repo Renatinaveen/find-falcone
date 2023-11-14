@@ -16,8 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          version: '3.13.6'
-          channel: 'stable'
+          flutter-version: '3.13.6'
 
       - name: Install Dependencies
         run: flutter pub get
@@ -31,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Copy Flutter web build to the deployment directory
         run: cp -r build/web/* $GITHUB_WORKSPACE
