@@ -1,36 +1,43 @@
 name: finding_falcone
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build:
-    name: Build Web
-    env:
-      my_secret: ${{secrets.Commit_secret}}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           version: '3.13.6'
-      - run: |
-          cd example
-          flutter config --enable-web
-          flutter pub get
-          flutter build web --release --base-href /falcone/
-      - run: |
-          cd find_falcone/build/web
-          git init
-          # type configurations: your user.email and user.name followed lines
-          # git config --global user.email your_email
-          # git config --global user.name your_name
-          git config --global user.email ***
-          git config --global user.name ***
-          git status
-          # change this remote url for examle your remote url is https://github.com/onatcipli/particle_field.git then the following:
-          git remote add origin https://${{secrets.Commit_secret}}@github.com/sensn/particle_field.git
-          git checkout -b gh-pages
-          git add --all
-          git commit -m "update"
-          git push origin gh-pages -f
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Web App
+        run: flutter build web --release --base-href /falcone/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Copy Flutter web build to the deployment directory
+        run: cp -r build/web/* $GITHUB_WORKSPACE
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: $GITHUB_WORKSPACE
